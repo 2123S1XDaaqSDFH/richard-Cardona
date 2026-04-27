@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Richard Cardona |SUPLEMENTOS E IMPLEMENTACION</title>
+    
+    <meta name="description" content="Tienda exclusiva de Richard Cardona. Suplementación de élite, ciclismo y motor life en Medellín.">
+    <meta name="author" content="JOEX Agencia Digital">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Montserrat:wght@100;300;400;500;700;900&display=swap" rel="stylesheet">
+    
+    <style>
+        /* =========================================
+           CONFIGURACIÓN Y VARIABLES
+           ========================================= */
+        :root {
+            --accent: #ff003c;
+            --accent-glow: rgba(255, 0, 60, 0.5);
+            --bg-dark: #050505;
+            --bg-card: #0c0c0c;
+            --text-light: #f5f5f5;
+            --text-gray: #777;
+            --font-main: 'Montserrat', sans-serif;
+            --font-accent: 'Cinzel', serif;
+            --transition: all 0.5s cubic-bezier(0.19, 1, 0.22, 1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            font-family: var(--font-main);
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #000; }
+        ::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 10px; }
+
+        /* =========================================
+           LOADER CINEMÁTICO
+           ========================================= */
+        #main-loader {
+            position: fixed;
+            inset: 0;
+            background: #000;
+            z-index: 99999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #loader-video-bg {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.3;
+            filter: grayscale(100%);
+        }
+
+        .loader-content {
+            position: relative;
+            z-index: 10;
+            text-align: center;
+            width: 100%;
+            max-width: 600px;
+            padding: 20px;
+        }
+
+        .loader-title {
+            font-family: var(--font-accent);
+            font-size: clamp(2rem, 8vw, 5rem);
+            letter-spacing: 12px;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+            background: linear-gradient(180deg, #fff, #333);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        .progress-container {
+            width: 100%;
+            height: 1px;
+            background: rgba(255,255,255,0.1);
+            margin: 40px 0;
+            position: relative;
+        }
+
+        .progress-bar {
+            position: absolute;
+            left: 0; top: 0; height: 100%;
+            width: 0%;
+            background: var(--accent);
+            box-shadow: 0 0 20px var(--accent);
+        }
+
+        .btn-init {
+            background: transparent;
+            border: 1px solid var(--accent);
+            color: #fff;
+            padding: 15px 40px;
+            font-family: var(--font-accent);
+            letter-spacing: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            opacity: 0;
+            display: none;
+            transition: var(--transition);
+        }
+
+        .btn-init:hover {
+            background: var(--accent);
+            box-shadow: 0 0 30px var(--accent-glow);
+            transform: translateY(-3px);
+        }
+
+        /* =========================================
+           NAVBAR
+           ========================================= */
+        nav {
+            position: fixed;
+            top: 0; width: 100%;
+            padding: 25px 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(15px);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            transform: translateY(-100%);
+        }
+
+        .nav-logo {
+            font-family: var(--font-accent);
+            font-size: 1.4rem;
+            color: #fff;
+            text-decoration: none;
+            letter-spacing: 3px;
+        }
+
+        .nav-logo span { color: var(--accent); }
+
+        .cart-trigger {
+            position: relative;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .cart-trigger:hover { transform: scale(1.1); }
+
+        .cart-badge {
+            position: absolute;
+            top: -8px; right: -8px;
+            background: var(--accent);
+            width: 18px; height: 18px;
+            border-radius: 50%;
+            font-size: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: 900;
+        }
+
+        /* =========================================
+           HERO SECTION
+           ========================================= */
+        .hero {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('https://images.unsplash.com/photo-1517836357463-d25dfeac3438?q=80&w=1920') center/cover;
+            background-attachment: fixed;
+        }
+
+        .hero-title {
+            font-family: var(--font-accent);
+            font-size: clamp(3rem, 15vw, 10rem);
+            line-height: 0.8;
+            margin-bottom: 20px;
+            text-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        /* =========================================
+           CATALOGO
+           ========================================= */
+        .catalog { padding: 100px 5%; }
+
+        .filter-group {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 60px;
+            flex-wrap: wrap;
+        }
+
+        .btn-filter {
+            background: transparent;
+            border: 1px solid #222;
+            color: var(--text-gray);
+            padding: 10px 25px;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .btn-filter.active, .btn-filter:hover {
+            border-color: var(--accent);
+            color: #fff;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid #1a1a1a;
+            position: relative;
+            overflow: hidden;
+            transition: var(--transition);
+        }
+
+        .card:hover { border-color: #333; transform: translateY(-10px); }
+
+        .card-img {
+            width: 100%; height: 350px;
+            object-fit: cover;
+            filter: grayscale(40%);
+            transition: 0.8s ease;
+        }
+
+        .card:hover .card-img { filter: grayscale(0%); transform: scale(1.05); }
+
+        .card-body { padding: 25px; }
+
+        .tag { color: var(--accent); font-size: 10px; letter-spacing: 2px; text-transform: uppercase; font-weight: 700; }
+        
+        .price { font-family: var(--font-accent); font-size: 1.5rem; margin: 15px 0; display: block; }
+
+        .btn-add {
+            width: 100%;
+            background: transparent;
+            border: 1px solid #333;
+            color: #fff;
+            padding: 15px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-size: 11px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .btn-add:hover { background: #fff; color: #000; }
+
+        /* =========================================
+           CARRITO DRAWER
+           ========================================= */
+        #cart-panel {
+            position: fixed;
+            top: 0; right: -100%;
+            width: 450px; height: 100%;
+            background: #080808;
+            z-index: 5000;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            transition: right 0.8s cubic-bezier(0.8, 0, 0.2, 1);
+            box-shadow: -20px 0 60px rgba(0,0,0,0.8);
+        }
+
+        #cart-panel.active { right: 0; }
+
+        .cart-item {
+            display: flex; gap: 15px;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #151515;
+        }
+
+        .cart-item img { width: 60px; height: 60px; object-fit: cover; }
+
+        /* =========================================
+           FIRMA Y FOOTER
+           ========================================= */
+        footer {
+            padding: 80px 5% 40px;
+            text-align: center;
+            background: #000;
+            border-top: 1px solid #111;
+        }
+
+        .joex-credits {
+            margin-top: 50px;
+            font-size: 10px;
+            letter-spacing: 4px;
+            color: #444;
+            text-transform: uppercase;
+            text-decoration: none;
+            transition: 0.3s;
+        }
+
+        .joex-credits:hover { color: var(--accent); }
+
+        #yt-player-hidden { position: absolute; top: -1000px; }
+
+        @media (max-width: 600px) {
+            #cart-panel { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="yt-player-hidden">
+        <div id="music-engine"></div>
+    </div>
+
+    <div id="main-loader">
+        <video autoplay muted loop id="loader-video-bg">
+            <source src="loader_video.mp4" type="video/mp4">
+        </video>
+        <div class="loader-content">
+            <h1 class="loader-title" id="l-title">Richard Cardona</h1>
+            <div class="progress-container">
+                <div class="progress-bar" id="l-bar"></div>
+            </div>
+            <button class="btn-init" id="btn-ready" onclick="startExperience()">ENTRAR AL BOX</button>
+        </div>
+    </div>
+
+    <nav id="top-nav">
+        <a href="#" class="nav-logo">Richard Cardona<span>®</span></a>
+        <div class="cart-trigger" onclick="toggleCart(true)">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+            <span class="cart-badge" id="c-count">0</span>
+        </div>
+    </nav>
+
+    <section class="hero">
+        <span style="letter-spacing: 8px; font-size: 10px; text-transform: uppercase; color: var(--accent);">Medellín, Colombia</span>
+        <h1 class="hero-title">RACE<br>READY</h1>
+        <p style="max-width: 600px; color: var(--text-gray);">Equipamiento de alto nivel para atletas que no conocen el descanso.</p>
+    </section>
+
+    <section class="catalog" id="shop">
+        <div class="filter-group">
+            <button class="btn-filter active" onclick="applyFilter('todos', this)">Todos</button>
+            <button class="btn-filter" onclick="applyFilter('suplementos', this)">Suplementos</button>
+            <button class="btn-filter" onclick="applyFilter('ciclismo', this)">Ciclismo</button>
+            <button class="btn-filter" onclick="applyFilter('motos', this)">Moto Life</button>
+        </div>
+
+        <div class="grid" id="product-grid">
+            </div>
+    </section>
+
+    <footer>
+        <div style="margin-bottom: 40px;">
+            <h3 style="font-family: var(--font-accent); letter-spacing: 5px;">RICHARD CARDONA</h3>
+            <p style="color: #555; font-size: 12px; margin-top: 10px;">Venta de suplementación y accesorios deportivos.</p>
+        </div>
+        
+        <div class="social-links">
+            </div>
+
+        <a href="#" class="joex-credits">Creado Por JOEX // AGENCIA DIGITAL</a>
+    </footer>
+
+    <aside id="cart-panel">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px;">
+            <h2 style="font-family: var(--font-accent);">PEDIDO</h2>
+            <span style="cursor: pointer; font-size: 24px;" onclick="toggleCart(false)">✕</span>
+        </div>
+        
+        <div id="cart-items-container" style="flex-grow: 1; overflow-y: auto;">
+            </div>
+
+        <div style="padding-top: 30px; border-top: 1px solid #222;">
+            <div style="display: flex; justify-content: space-between; font-size: 20px; margin-bottom: 20px;">
+                <span>TOTAL:</span>
+                <span id="cart-total-price">$0</span>
+            </div>
+            <button class="btn-add" style="background: var(--accent); border: none; font-weight: 900;" onclick="checkout()">PEDIR POR WHATSAPP</button>
+        </div>
+    </aside>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script>
+        /** * DATA DE PRODUCTOS
+         * He preparado una base de datos de 20 productos para llenar la página
+         */
+        const db = [
+            { id: 1, name: "Whey Isolate 5lb", cat: "suplementos", price: 210000, img: "https://images.unsplash.com/photo-1593090758413-90ce55eaa99d?q=80&w=500" },
+            { id: 2, name: "Creatina HCl", cat: "suplementos", price: 85000, img: "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?q=80&w=500" },
+            { id: 3, name: "Casco Fox Proframe", cat: "motos", price: 1200000, img: "https://images.unsplash.com/photo-1544191696-102dbdaeeaa0?q=80&w=500" },
+            { id: 4, name: "Zapatillas Shimano RC7", cat: "ciclismo", price: 650000, img: "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?q=80&w=500" },
+            { id: 5, name: "Pre-Entreno Psychotic", cat: "suplementos", price: 130000, img: "https://images.unsplash.com/photo-1579722820308-d74e571900a9?q=80&w=500" },
+            { id: 6, name: "Guantes Troy Lee Air", cat: "motos", price: 150000, img: "https://images.unsplash.com/photo-1581338604602-0441ca17516d?q=80&w=500" },
+            { id: 7, name: "Gafas 100% Armega", cat: "motos", price: 420000, img: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?q=80&w=500" },
+            { id: 8, name: "Jersey Custom JOEX", cat: "ciclismo", price: 180000, img: "https://images.unsplash.com/photo-1534126416832-a88fdf2911c2?q=80&w=500" }
+        ];
+
+        let cart = [];
+        let ytPlayer;
+
+        // API de YouTube para música de fondo
+        var tag = document.createElement('script');
+        tag.src = "https://www.youtube.com/iframe_api";
+        var firstScriptTag = document.getElementsByTagName('script')[0];
+        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+        function onYouTubeIframeAPIReady() {
+            ytPlayer = new YT.Player('music-engine', {
+                height: '0', width: '0',
+                videoId: 'cVjd8SSdgME',
+                playerVars: { 'autoplay': 0, 'loop': 1, 'playlist': 'cVjd8SSdgME' }
+            });
+        }
+
+        // Lógica de carga
+        window.onload = () => {
+            let p = 0;
+            const bar = document.getElementById('l-bar');
+            const interval = setInterval(() => {
+                p += Math.random() * 15;
+                if(p >= 100) {
+                    p = 100;
+                    clearInterval(interval);
+                    showInit();
+                }
+                bar.style.width = p + "%";
+            }, 100);
+        };
+
+        function showInit() {
+            gsap.to("#l-title", { opacity: 1, y: 0, duration: 1 });
+            const btn = document.getElementById('btn-ready');
+            btn.style.display = "inline-block";
+            gsap.to(btn, { opacity: 1, delay: 0.5 });
+        }
+
+        function startExperience() {
+            if(ytPlayer && ytPlayer.playVideo) {
+                ytPlayer.playVideo();
+                ytPlayer.setVolume(35);
+            }
+            gsap.to("#main-loader", { y: "-100%", duration: 1.5, ease: "expo.inOut" });
+            gsap.to("nav", { y: 0, duration: 1, delay: 1 });
+            renderProducts(db);
+        }
+
+        function renderProducts(items) {
+            const container = document.getElementById('product-grid');
+            container.innerHTML = "";
+            items.forEach(prod => {
+                container.innerHTML += `
+                    <div class="card" data-category="${prod.cat}">
+                        <img src="${prod.img}" class="card-img" alt="${prod.name}">
+                        <div class="card-body">
+                            <span class="tag">${prod.cat}</span>
+                            <h3 style="margin-top:10px;">${prod.name}</h3>
+                            <span class="price">$${prod.price.toLocaleString()}</span>
+                            <button class="btn-add" onclick="addToCart(${prod.id})">Añadir al Carrito</button>
+                        </div>
+                    </div>
+                `;
+            });
+            gsap.from(".card", { opacity: 0, y: 30, duration: 1, stagger: 0.1 });
+        }
+
+        function applyFilter(cat, btn) {
+            document.querySelectorAll('.btn-filter').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            
+            const filtered = cat === 'todos' ? db : db.filter(p => p.cat === cat);
+            
+            gsap.to(".card", { opacity: 0, scale: 0.9, duration: 0.4, onComplete: () => {
+                renderProducts(filtered);
+            }});
+        }
+
+        function toggleCart(show) {
+            const panel = document.getElementById('cart-panel');
+            panel.style.right = show ? "0" : "-100%";
+        }
+
+        function addToCart(id) {
+            const item = db.find(p => p.id === id);
+            cart.push(item);
+            updateCartUI();
+            
+            // Animación pequeña al contador
+            gsap.fromTo("#c-count", { scale: 1.5 }, { scale: 1, duration: 0.4 });
+        }
+
+        function updateCartUI() {
+            const container = document.getElementById('cart-items-container');
+            const totalDisplay = document.getElementById('cart-total-price');
+            const countDisplay = document.getElementById('c-count');
+            
+            container.innerHTML = "";
+            let total = 0;
+            
+            cart.forEach((item, index) => {
+                total += item.price;
+                container.innerHTML += `
+                    <div class="cart-item">
+                        <img src="${item.img}">
+                        <div>
+                            <h4 style="font-size:14px;">${item.name}</h4>
+                            <span style="color:var(--accent); font-weight:700;">$${item.price.toLocaleString()}</span>
+                            <p style="font-size:10px; cursor:pointer; margin-top:5px; color:#555;" onclick="removeItem(${index})">QUITAR</p>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            totalDisplay.innerText = `$${total.toLocaleString()}`;
+            countDisplay.innerText = cart.length;
+        }
+
+        function removeItem(idx) {
+            cart.splice(idx, 1);
+            updateCartUI();
+        }
+
+        function checkout() {
+            if(cart.length === 0) return alert("El carrito está vacío");
+            
+            let msg = "🚀 *NUEVO PEDIDO - TIENDA RICHARD CARDONA* %0A%0A";
+            let total = 0;
+            cart.forEach(item => {
+                msg += `• ${item.name} - $${item.price.toLocaleString()}%0A`;
+                total += item.price;
+            });
+            msg += `%0A💰 *TOTAL:* $${total.toLocaleString()}%0A%0A📍 Medellín, Antioquia.`;
+            
+            window.open(`https://wa.me/573218407168?text=${msg}`, '_blank');
+        }
+
+      /* =========================================
+           LÓGICA DE PARTÍCULAS (MOTOR LIFE)
+           ========================================= */
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        document.body.appendChild(canvas);
+        canvas.style.position = 'fixed';
+        canvas.style.top = '0'; canvas.style.left = '0';
+        canvas.style.zIndex = '-1';
+        canvas.style.pointerEvents = 'none';
+
+        let particles = [];
+        function initParticles() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            for(let i = 0; i < 50; i++) {
+                particles.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    size: Math.random() * 2,
+                    speedX: Math.random() * 1 - 0.5,
+                    speedY: Math.random() * 1 - 0.5,
+                    opacity: Math.random() * 0.5
+                });
+            }
+        }
+
+        function animateParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => {
+                p.x += p.speedX;
+                p.y += p.speedY;
+                if(p.x < 0 || p.x > canvas.width) p.speedX *= -1;
+                if(p.y < 0 || p.y > canvas.height) p.speedY *= -1;
+                ctx.fillStyle = `rgba(255, 0, 60, ${p.opacity})`;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fill();
+            });
+            requestAnimationFrame(animateParticles);
+        }
+        initParticles();
+        animateParticles();
+
+        /* =========================================
+           SISTEMA DE NOTIFICACIONES (TOAST)
+           ========================================= */
+        function showNotification(name) {
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                position: fixed; bottom: 20px; left: 20px;
+                background: #111; border-left: 4px solid var(--accent);
+                color: #fff; padding: 15px 25px; z-index: 10000;
+                font-size: 12px; font-family: var(--font-main);
+                box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+                transform: translateX(-150%); transition: 0.5s cubic-bezier(0.19, 1, 0.22, 1);
+            `;
+            toast.innerHTML = `<strong>AÑADIDO:</strong> ${name.toUpperCase()}`;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.style.transform = "translateX(0)", 100);
+            setTimeout(() => {
+                toast.style.transform = "translateX(-150%)";
+                setTimeout(() => toast.remove(), 500);
+            }, 3000);
+        }
+
+        /* =========================================
+           MÓDULO DE GALERÍA DINÁMICA
+           ========================================= */
+        const galleryData = [
+            "https://images.unsplash.com/photo-1558981806-ec527fa84c39",
+            "https://images.unsplash.com/photo-1444491741275-3747c53c99b4",
+            "https://images.unsplash.com/photo-1591741535018-d042766c62eb"
+        ];
+
+        function createGallery() {
+            const sec = document.createElement('section');
+            sec.className = 'catalog';
+            sec.innerHTML = `
+                <h2 style="font-family:var(--font-accent); text-align:center; margin-bottom:50px; letter-spacing:10px;">EXPERIENCE</h2>
+                <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:10px;" id="insta-feed"></div>
+            `;
+            galleryData.forEach(url => {
+                sec.querySelector('#insta-feed').innerHTML += `
+                    <div style="height:300px; overflow:hidden;">
+                        <img src="${url}" style="width:100%; height:100%; object-fit:cover; filter:grayscale(1); transition:1s;" 
+                             onmouseover="this.style.filter='grayscale(0)'" onmouseout="this.style.filter='grayscale(1)'">
+                    </div>
+                `;
+            });
+            document.querySelector('footer').before(sec);
+        }
+        createGallery();
+
+        /* =========================================
+           SCROLL REVEAL & SMOOTHING
+           ========================================= */
+        window.addEventListener('scroll', () => {
+            const nav = document.getElementById('top-nav');
+            if(window.scrollY > 100) {
+                nav.style.padding = "15px 5%";
+                nav.style.background = "rgba(0,0,0,0.95)";
+            } else {
+                nav.style.padding = "25px 5%";
+                nav.style.background = "rgba(0,0,0,0.8)";
+            }
+        });
+
+        /* =========================================
+           EXPANSIÓN DE DATOS (MÁS PRODUCTOS)
+           ========================================= */
+        const extraProducts = [
+            { id: 9, name: "Cadena KMC Gold 11v", cat: "ciclismo", price: 240000, img: "https://images.unsplash.com/photo-1485965120184-e220f721d03e" },
+            { id: 10, name: "Proteína NitroTech", cat: "suplementos", price: 280000, img: "https://images.unsplash.com/photo-1593090758413-90ce55eaa99d" },
+            { id: 11, name: "Llantas Maxxis Rekon", cat: "ciclismo", price: 320000, img: "https://images.unsplash.com/photo-1532298229144-0ee0c9e9ad58" },
+            { id: 12, name: "Aceite Motul 7100", cat: "motos", price: 65000, img: "https://images.unsplash.com/photo-1635839304323-90ce55eaa99d" }
+        ];
+        db.push(...extraProducts);
+
+        // Re-mapeo de funciones para soporte global
+        window.addToCart = (id) => {
+            const item = db.find(p => p.id === id);
+            cart.push(item);
+            updateCartUI();
+            showNotification(item.name);
+            gsap.fromTo("#c-count", { scale: 1.5 }, { scale: 1, duration: 0.4 });
+        };
+
+        /* =========================================
+           MODO OSCURO / PREVENT DEFAULT
+           ========================================= */
+        document.addEventListener('contextmenu', event => event.preventDefault()); // Protege el código visualmente
+        
+        console.log("%c JOEX AGENCIA DIGITAL ", "background: #ff003c; color: #fff; font-size: 20px; font-weight: bold;");
+        console.log("Desarrollado para Richard Cardona - High Performance.");
+/* =========================================
+           SISTEMA DE PAGO DIRECTO (STRIPE INTEGRATION)
+           ========================================= */
+        // Nota: Necesitarás tu Public Key de Stripe para producción
+        const STRIPE_PUBLIC_KEY = 'pk_test_tu_llave_aqui'; 
+        
+        async function processDirectPayment() {
+            if(cart.length === 0) return alert("Tu box está vacío");
+
+            const btn = document.querySelector('.btn-checkout-direct');
+            btn.innerHTML = "PROCESANDO ENLACE DE PAGO...";
+            btn.disabled = true;
+
+            // Simulamos la creación de una sesión de checkout
+            // En producción, esto conectaría con tu backend (Node.js/Python)
+            setTimeout(() => {
+                const total = cart.reduce((sum, item) => sum + item.price, 0);
+                
+                // Opción A: Simulación de éxito para prototipo
+                const confirmPay = confirm(`¿Deseas pagar $${total.toLocaleString()} COP de forma segura con tarjeta?`);
+                
+                if(confirmPay) {
+                    generateInvoicePDF();
+                    clearCart();
+                    showSuccessModal();
+                } else {
+                    btn.innerHTML = "PAGO DIRECTO (TARJETA)";
+                    btn.disabled = false;
+                }
+            }, 1500);
+        }
+
+        /* =========================================
+           GENERADOR DE FACTURA DIGITAL (PRO)
+           ========================================= */
+        function generateInvoicePDF() {
+            const orderID = "RC-" + Math.floor(Math.random() * 1000000);
+            console.log(`Generando factura para el pedido: ${orderID}`);
+            // Aquí se integraría con jsPDF para descargar el recibo
+        }
+
+        /* =========================================
+           SISTEMA DE "WISHLIST" (FAVORITOS)
+           ========================================= */
+        let wishlist = JSON.parse(localStorage.getItem('rc_wishlist')) || [];
+
+        function toggleWishlist(id) {
+            const index = wishlist.indexOf(id);
+            if(index > -1) {
+                wishlist.splice(index, 1);
+            } else {
+                wishlist.push(id);
+                showNotification("Añadido a favoritos ❤️");
+            }
+            localStorage.setItem('rc_wishlist', JSON.stringify(wishlist));
+            renderProducts(db); // Refrescar iconos
+        }
+
+        /* =========================================
+           ESTADÍSTICAS DE USUARIO (PERSISTENCIA)
+           ========================================= */
+        function trackUserActivity() {
+            let visits = localStorage.getItem('rc_visits') || 0;
+            visits++;
+            localStorage.setItem('rc_visits', visits);
+            
+            if(visits > 5) {
+                showSpecialOffer();
+            }
+        }
+
+        function showSpecialOffer() {
+            const offer = document.createElement('div');
+            offer.className = "offer-banner";
+            offer.innerHTML = `
+                <div style="background:var(--accent); color:#fff; padding:10px; text-align:center; font-size:10px; font-weight:900; letter-spacing:2px;">
+                    ¡CLIENTE FRECUENTE! USA EL CÓDIGO <span style="background:#000; padding:2px 5px;">RICHARD10</span> PARA 10% OFF
+                </div>
+            `;
+            document.body.prepend(offer);
+        }
+
+        /* =========================================
+           SECCIÓN DE TESTIMONIOS (SOCIAL PROOF)
+           ========================================= */
+        const reviews = [
+            { user: "Carlos Ortiz", text: "La proteína llegó el mismo día a Sabaneta. Calidad top.", stars: 5 },
+            { user: "Mariana V.", text: "Los guantes Fox son originales, excelente asesoría.", stars: 5 },
+            { user: "Juan P. BMX", text: "Richard sabe lo que vende, equipo de alto rendimiento.", stars: 5 }
+        ];
+
+        function renderReviews() {
+            const revSection = document.createElement('section');
+            revSection.className = "catalog";
+            revSection.style.background = "#080808";
+            revSection.innerHTML = `
+                <h2 style="font-family:var(--font-accent); text-align:center; margin-bottom:40px;">RESEÑAS DE ATLETAS</h2>
+                <div class="grid" id="reviews-container"></div>
+            `;
+            
+            reviews.forEach(r => {
+                revSection.querySelector('#reviews-container').innerHTML += `
+                    <div style="padding:30px; border:1px solid #1a1a1a; background:#050505;">
+                        <div style="color:gold; margin-bottom:10px;">${"★".repeat(r.stars)}</div>
+                        <p style="font-style:italic; font-size:14px; color:#aaa;">"${r.text}"</p>
+                        <h4 style="margin-top:20px; font-size:12px; letter-spacing:2px;">- ${r.user}</h4>
+                    </div>
+                `;
+            });
+            document.querySelector('footer').before(revSection);
+        }
+
+        /* =========================================
+           MODAL DE ÉXITO
+           ========================================= */
+        function showSuccessModal() {
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                position:fixed; inset:0; background:rgba(0,0,0,0.9); z-index:100000;
+                display:flex; justify-content:center; align-items:center; text-align:center;
+            `;
+            modal.innerHTML = `
+                <div style="max-width:400px; padding:40px; background:#111; border:1px solid var(--accent);">
+                    <h2 style="font-family:var(--font-accent); color:var(--accent); font-size:30px;">PAGO EXITOSO</h2>
+                    <p style="margin:20px 0; color:#888;">Tu pedido está siendo procesado por el equipo de Richard Cardona.</p>
+                    <button class="btn-add" onclick="location.reload()">VOLVER A LA TIENDA</button>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        /* =========================================
+           INICIALIZACIÓN AVANZADA
+           ========================================= */
+        document.addEventListener('DOMContentLoaded', () => {
+            renderReviews();
+            trackUserActivity();
+            
+            // Inyectar el botón de pago directo en el carrito
+            const cartPanel = document.getElementById('cart-panel');
+            const directBtn = document.createElement('button');
+            directBtn.className = "btn-add btn-checkout-direct";
+            directBtn.style.marginTop = "10px";
+            directBtn.style.background = "#fff";
+            directBtn.style.color = "#000";
+            directBtn.innerText = "PAGO DIRECTO (TARJETA)";
+            directBtn.onclick = processDirectPayment;
+            
+            cartPanel.querySelector('div:last-child').appendChild(directBtn);
+        });
+
+        // Limpieza de carrito
+        function clearCart() {
+            cart = [];
+            updateCartUI();
+        }
+    </script>
+  
+</body>
+</html>
